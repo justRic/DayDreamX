@@ -1,4 +1,4 @@
-# DayDream X:
+# Diddy X:
 <div align="center">
         <img src="https://github.com/NightProxy/DayDreamX/blob/main/assets/DDXBanner.png" style="width: 1200px"/>
     <h2>Explore the Web with DayDream X</h2>
