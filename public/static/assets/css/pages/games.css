@@ -1,63 +1,132 @@
+/* 🌟 App Card Styling (Upgraded Full Version) */
+:root {
+  --app-card-width: 160px;
+  --app-radius: 20px;
+  --app-bg: rgba(255, 255, 255, 0.14);
+  --app-bg-hover: rgba(255, 255, 255, 0.25);
+  --app-blur: 40px;
+  --app-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  --theme-color: #4da3ff; /* fallback theme color */
+}
+
 body {
   overflow-y: auto !important;
+  background: var(--page-bg, #0d0d0d);
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #fff;
 }
 
+/* 📦 Grid Layout */
 #gamesGrid {
   display: flex;
-  flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 2.3vw;
-  margin-top: 30px;
+  gap: 2vw;
+  margin: 40px auto;
+  max-width: 1600px;
+  padding: 0 10px;
 }
 
+/* 🎮 App Card */
 .app {
-  width: 155px;
-  height: fit-content;
-  padding: 10px;
+  width: var(--app-card-width);
+  padding: 12px;
   text-align: center;
-  border-radius: 20px;
-  background-color: rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(50px);
-  transition: 0.3s ease-in-out;
+  border-radius: var(--app-radius);
+  background: var(--app-bg);
+  backdrop-filter: blur(var(--app-blur));
+  transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
   position: relative;
+  overflow: hidden;
 }
 
+/* 🖼 Image Container */
 .img-container {
   position: relative;
+  border-radius: var(--app-radius);
+  overflow: hidden;
 }
 
+/* 🎨 Image */
 .app img {
-  border-radius: 20px;
-  min-width: 155px;
-  max-width: 150px;
-  width: 150px;
-  transition: 0.5s;
+  width: 100%;
+  border-radius: var(--app-radius);
+  transition: transform 0.4s ease;
+  display: block;
 }
 
+/* 📝 Caption */
 .app p {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 500;
   color: #fff;
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 5px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
+  padding: 8px;
   opacity: 0;
-  transition: opacity 0.5s;
-  border-radius: 0 0 20px 20px;
+  transform: translateY(15px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  border-radius: 0 0 var(--app-radius) var(--app-radius);
 }
 
+/* ✨ Hover Effects */
 .app:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background: var(--app-bg-hover);
   border: 1px solid var(--theme-color);
-  transform: scale(1.06);
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: var(--app-shadow);
   cursor: pointer;
-  transition: 0.3s;
+}
+
+.app:hover img {
+  transform: scale(1.07);
 }
 
 .app:hover p {
   opacity: 1;
+  transform: translateY(0);
+}
+
+/* 📱 Responsiveness */
+@media (max-width: 1024px) {
+  .app {
+    width: 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  #gamesGrid {
+    gap: 4vw;
+  }
+  .app {
+    width: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
+    width: 120px;
+  }
+  .app p {
+    font-size: 12px;
+  }
+}
+
+/* 🌗 Dark/Light Theme Support */
+body.light {
+  --app-bg: rgba(0, 0, 0, 0.05);
+  --app-bg-hover: rgba(0, 0, 0, 0.12);
+  --page-bg: #f2f2f2;
+  color: #222;
+}
+
+body.light .app p {
+  color: #111;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.8), transparent);
 }
