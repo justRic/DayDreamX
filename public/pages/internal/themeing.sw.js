@@ -1,13 +1,12 @@
 importScripts("/assets/js/lib/filerJS/filer.min.js");
 
-const fs = new Filer.FileSystem({
-  name: "theme-files",
-});
+const fs = new Filer.FileSystem({ name: "theme-files" });
 
 self.addEventListener("install", (event) => {
   console.log("Theming Service Worker installed");
-  event.waitUntil(createBackgroundDirectory());
-  event.waitUntil(createLogoDirectory());
+  event.waitUntil(
+    Promise.all([createDirectory("/backgrounds"), createDirectory("/logos")])
+  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -15,38 +14,51 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(clients.claim());
 });
 
+// Messaging API
 self.addEventListener("message", async (event) => {
   const { type, file } = event.data;
 
   switch (type) {
     case "uploadBG":
-      if (file) {
-        await uploadBackground(file);
-      }
+      event.source.postMessage({
+        type,
+        success: await uploadFile("/backgrounds", file),
+      });
       break;
 
     case "removeBG":
-      await removeBackground(file);
+      event.source.postMessage({
+        type,
+        success: await removeFile("/backgrounds", file),
+      });
       break;
 
     case "listBG":
-      const filenames = await listBackgroundFiles();
-      event.ports[0]?.postMessage({ filenames });
+      event.source.postMessage({
+        type,
+        files: await listFiles("/backgrounds"),
+      });
       break;
 
     case "uploadLogo":
-      if (file) {
-        await uploadLogo(file);
-      }
+      event.source.postMessage({
+        type,
+        success: await uploadFile("/logos", file),
+      });
       break;
+
     case "removeLogo":
-      if (file) {
-        await removeLogo(file);
-      }
+      event.source.postMessage({
+        type,
+        success: await removeFile("/logos", file),
+      });
       break;
+
     case "listLogos":
-      const logoFilenames = await listLogoFiles();
-      event.ports[0]?.postMessage({ logoFilenames });
+      event.source.postMessage({
+        type,
+        files: await listFiles("/logos"),
+      });
       break;
 
     default:
@@ -54,57 +66,66 @@ self.addEventListener("message", async (event) => {
   }
 });
 
-async function createBackgroundDirectory() {
+// ---- File helpers ----
+async function createDirectory(path) {
   return new Promise((resolve) => {
-    const dirPath = "/backgrounds";
-    fs.mkdir(dirPath, { recursive: true }, (err) => {
-      if (err) {
-        console.error("Error creating backgrounds directory:", err);
+    fs.mkdir(path, { recursive: true }, (err) => {
+      if (err && err.code !== "EEXIST") {
+        console.error(`Error creating directory ${path}:`, err);
         resolve(false);
       } else {
-        console.log("Backgrounds directory created successfully.");
         resolve(true);
       }
     });
   });
 }
 
-async function uploadBackground(file) {
+async function uploadFile(dir, file) {
   try {
-    const filename = `/backgrounds/${file.name}`;
-    console.log(`Uploading file: ${file.name}, size: ${file.size} bytes`);
+    if (!file) return false;
+    await createDirectory(dir);
 
-    const arrayBuffer = await file.arrayBuffer();
+    const filePath = `${dir}/${file.name}`;
+    const buffer = Filer.Buffer.from(await file.arrayBuffer());
 
-    const fileBuffer = Filer.Buffer.from(arrayBuffer);
-
-    await fs.writeFile(filename, fileBuffer);
-
-    console.log(`Image "${filename}" uploaded successfully.`);
+    return new Promise((resolve) => {
+      fs.writeFile(filePath, buffer, (err) => {
+        if (err) {
+          console.error(`Error writing file ${filePath}:`, err);
+          resolve(false);
+        } else {
+          console.log(`File "${filePath}" uploaded successfully.`);
+          resolve(true);
+        }
+      });
+    });
   } catch (err) {
-    console.error("Error uploading image:", err);
+    console.error("Upload error:", err);
+    return false;
   }
 }
 
-async function removeBackground(file) {
-  const dirPath = "/backgrounds";
-
-  const filePath = `${dirPath}/${file}`;
-  fs.unlink(filePath, (unlinkErr) => {
-    if (unlinkErr) {
-      console.error(`Failed to delete background "${filePath}":`, unlinkErr);
-    } else {
-      console.log(`Background "${filePath}" removed successfully.`);
-    }
+async function removeFile(dir, filename) {
+  if (!filename) return false;
+  const filePath = `${dir}/${filename}`;
+  return new Promise((resolve) => {
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(`Error deleting file ${filePath}:`, err);
+        resolve(false);
+      } else {
+        console.log(`File "${filePath}" removed successfully.`);
+        resolve(true);
+      }
+    });
   });
 }
-async function listBackgroundFiles() {
-  return new Promise((resolve) => {
-    const dirPath = "/backgrounds/";
 
-    fs.readdir(dirPath, (err, entries) => {
+async function listFiles(dir) {
+  return new Promise((resolve) => {
+    fs.readdir(dir, (err, entries) => {
       if (err) {
-        console.error("Error listing background files:", err);
+        console.error(`Error listing files in ${dir}:`, err);
         resolve([]);
       } else {
         resolve(entries);
@@ -113,139 +134,56 @@ async function listBackgroundFiles() {
   });
 }
 
-async function createLogoDirectory() {
-  return new Promise((resolve) => {
-    const dirPath = "/logos";
-    fs.mkdir(dirPath, { recursive: true }, (err) => {
-      if (err) {
-        console.error("Error creating backgrounds directory:", err);
-        resolve(false);
-      } else {
-        console.log("Backgrounds directory created successfully.");
-        resolve(true);
-      }
-    });
-  });
-}
-
-async function uploadLogo(file) {
-  try {
-    const filename = `/logos/${file.name}`;
-    console.log(`Uploading file: ${file.name}, size: ${file.size} bytes`);
-
-    const arrayBuffer = await file.arrayBuffer();
-
-    const fileBuffer = Filer.Buffer.from(arrayBuffer);
-
-    await fs.writeFile(filename, fileBuffer);
-
-    console.log(`Logo "${filename}" uploaded successfully.`);
-  } catch (err) {
-    console.error("Error uploading image:", err);
-  }
-}
-
-async function removeLogo(file) {
-  const dirPath = "/logos";
-
-  const filePath = `${dirPath}/${file}`;
-  fs.unlink(filePath, (unlinkErr) => {
-    if (unlinkErr) {
-      console.error(`Failed to delete Logo "${filePath}":`, unlinkErr);
-    } else {
-      console.log(`Logo "${filePath}" removed successfully.`);
-    }
-  });
-}
-
-async function listLogoFiles() {
-  return new Promise((resolve) => {
-    const dirPath = "/logos/";
-
-    fs.readdir(dirPath, (err, entries) => {
-      if (err) {
-        console.error("Error listing logo files:", err);
-        resolve([]);
-      } else {
-        resolve(entries);
-      }
-    });
-  });
-}
-
+// ---- Fetch handler ----
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
   if (url.pathname.startsWith("/internal/themes/backgrounds/")) {
     const filename = url.pathname.replace("/internal/themes/backgrounds/", "");
-
-    event.respondWith(
-      new Promise((resolve) => {
-        fs.readFile(`/backgrounds/${filename}`, "binary", (err, data) => {
-          if (err) {
-            console.error(`File not found: ${filename}`, err);
-            resolve(new Response("File not found", { status: 404 }));
-          } else {
-            let contentType = "application/octet-stream";
-            const ext = filename.split(".").pop().toLowerCase();
-
-            if (ext === "png") contentType = "image/png";
-            else if (ext === "jpg" || ext === "jpeg")
-              contentType = "image/jpeg";
-            else if (ext === "gif") contentType = "image/gif";
-            else if (ext === "webp") contentType = "image/webp";
-            else if (ext === "svg") contentType = "image/svg+xml";
-
-            resolve(
-              new Response(data, {
-                status: 200,
-                headers: {
-                  "Content-Type": contentType,
-                  "Cache-Control": "public, max-age=0",
-                  Vary: "Accept-Encoding",
-                  "accept-ranges": "bytes",
-                  connection: "keep-alive",
-                },
-              })
-            );
-          }
-        });
-      })
-    );
+    event.respondWith(serveFile(`/backgrounds/${filename}`));
   } else if (url.pathname.startsWith("/internal/themes/logos/")) {
     const filename = url.pathname.replace("/internal/themes/logos/", "");
-    event.respondWith(
-      new Promise((resolve) => {
-        fs.readFile(`/logos/${filename}`, "binary", (err, data) => {
-          if (err) {
-            console.error(`File not found: ${filename}`, err);
-            resolve(new Response("File not found", { status: 404 }));
-          } else {
-            let contentType = "application/octet-stream";
-            const ext = filename.split(".").pop().toLowerCase();
-
-            if (ext === "png") contentType = "image/png";
-            else if (ext === "jpg" || ext === "jpeg")
-              contentType = "image/jpeg";
-            else if (ext === "gif") contentType = "image/gif";
-            else if (ext === "webp") contentType = "image/webp";
-            else if (ext === "svg") contentType = "image/svg+xml";
-
-            resolve(
-              new Response(data, {
-                status: 200,
-                headers: {
-                  "Content-Type": contentType,
-                  "Cache-Control": "public, max-age=0",
-                  Vary: "Accept-Encoding",
-                  "accept-ranges": "bytes",
-                  connection: "keep-alive",
-                },
-              })
-            );
-          }
-        });
-      })
-    );
+    event.respondWith(serveFile(`/logos/${filename}`));
   }
 });
+
+function serveFile(path) {
+  return new Promise((resolve) => {
+    fs.readFile(path, (err, data) => {
+      if (err) {
+        console.error(`File not found: ${path}`, err);
+        resolve(new Response("File not found", { status: 404 }));
+      } else {
+        resolve(
+          new Response(data, {
+            status: 200,
+            headers: {
+              "Content-Type": getMimeType(path),
+              "Cache-Control": "public, max-age=0",
+            },
+          })
+        );
+      }
+    });
+  });
+}
+
+// ---- MIME helper ----
+function getMimeType(filename) {
+  const ext = filename.split(".").pop().toLowerCase();
+  switch (ext) {
+    case "png":
+      return "image/png";
+    case "jpg":
+    case "jpeg":
+      return "image/jpeg";
+    case "gif":
+      return "image/gif";
+    case "webp":
+      return "image/webp";
+    case "svg":
+      return "image/svg+xml";
+    default:
+      return "application/octet-stream";
+  }
+}
