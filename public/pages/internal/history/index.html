@@ -1,19 +1,18 @@
 <!doctype html>
 <html lang="en">
-
 <head>
     <title>DDX History</title>
-    <link rel="icon" type="icon/x-icon" href="/assets/imgs/logo.png" />
+    <link rel="icon" type="image/x-icon" href="/assets/imgs/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="UTF-8" />
+
+    <!-- Stylesheets -->
     <link rel="stylesheet" type="text/css" href="/assets/css/global.css" />
     <link rel="stylesheet" href="/assets/css/imports.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/vars.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/pages/internalBase.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/pages/history.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/pages/settings.css" />
-
-
 </head>
 
 <body>
@@ -22,46 +21,29 @@
     </div>
     <div class="historyContainer">
         <!-- history -->
-        <h1 style="color: var(--text-color)"><span class="material-symbols-outlined">history</span> History</h1>
+        <h1 style="color: var(--text-color)">
+          <span class="material-symbols-outlined">history</span> History
+        </h1>
 
-        <div
-            class="search">
+        <div class="search">
             <button aria-label="Search history input" type="submit" class="history_submit"
-                style="background: none; border: none; padding: 0; cursor: pointer;">
-                <svg fill="none" viewBox="0 0 18 18" height="18" width="18">
-                    <path fill="#3A3A3A"
-                        d="M7.132 0C3.197 0 0 3.124 0 6.97c0 3.844 3.197 6.969 7.132 6.969 1.557 0 2.995-.49 4.169-1.32L16.82 18 18 16.847l-5.454-5.342a6.846 6.846 0 0 0 1.718-4.536C14.264 3.124 11.067 0 7.132 0zm0 .82c3.48 0 6.293 2.748 6.293 6.15 0 3.4-2.813 6.149-6.293 6.149S.839 10.37.839 6.969C.839 3.568 3.651.82 7.132.82z">
-                    </path>
-                </svg>
+                    style="background: none; border: none; padding: 0; cursor: pointer;">
+              <svg fill="none" viewBox="0 0 18 18" height="18" width="18">
+                  <path fill="#3A3A3A"
+                        d="M7.132 0C3.197 0 0 3.124 0 6.97c0 3.844 3.197 6.969 7.132 6.969 1.557 0 2.995-.49 4.169-1.32L16.82 18 18 16.847l-5.454-5.342a6.846 6.846 0 0 0 1.718-4.536C14.264 3.124 11.067 0 7.132 0zm0 .82c3.48 0 6.293 2.748 6.293 6.150 0 3.400-2.813 6.149-6.293 6.149S.839 10.370.839 6.969C.839 3.568 3.651.820 7.132.820z">
+                  </path>
+              </svg>
             </button>
-            <input placeholder="Search your history..."
-                style="border: none; outline: none; flex: 1; font-size: 14px; background: transparent;"
-                type="text" />
+            <input id="search-input"
+                   placeholder="Search your history..."
+                   style="border: none; outline: none; flex: 1; font-size: 14px; background: transparent;"
+                   type="text" />
         </div>
-
-
 
         <div data-nightmare="history-window" class="history-window" id="history-window">
-            <div id='02242025' class="history-category">
-                <h3 class="day_title">Unavailable until finished</h3>
-                <!--<h3 class="day_title">Monday, February 24, 2025</h3>
-                <hr class="separator"/>
-                <div id="0" class="history-entry">
-                    <img src="https://google.com/favicon.ico" class="history_favicon" />
-                    <p>Google | Search</p>
-                    <p class="history_hostname">www.google.com</p>
-                    <span class="material-symbols-outlined" id="deleteHistory" tag="0">
-                    close
-                    </span>
-                </div>
-                <div id="1" class="history-entry">
-
-                </div>-->
-            </div>
-            
+            <!-- Entries will be inserted here via JS -->
         </div>
     </div>
-
 
     <!-- Scripts -->
     <script src="/assets/js/lib/js-cookie/js.cookie.min.js"></script>
@@ -77,7 +59,8 @@
     <script src="/~/eclipse.codecs.js"></script>
     <script src="/~/eclipse.config.js"></script>
     <script src="/&/sandstone.js"></script>
-    <!--APIs-->
+
+    <!-- APIs -->
     <script src="/assets/js/apis/events.js"></script>
     <script src="/assets/js/apis/logging.js"></script>
     <script src="/assets/js/apis/profiles.js"></script>
@@ -86,12 +69,202 @@
     <script src="/assets/js/apis/versions.js"></script>
     <script src="/assets/js/apis/exporting.js"></script>
     <script src="/assets/js/apis/proxy.js"></script>
-    <!--Other Files-->
+
+    <!-- Other Files -->
     <script src="/assets/js/browser/nightmarePlugins.js"></script>
-    <!--Main Scripts-->
+
+    <!-- Main Scripts -->
     <script src="/assets/js/global/theming.js"></script>
     <script src="/assets/js/global/index.js"></script>
-    <script src="/assets/js/internal/history.js"></script>
-</body>
+    <!-- Internal history logic -->
+    <script>
+      // Settings for localforage
+      localforage.config({
+        name: 'DDXHistoryStore',
+        storeName: 'history_entries' // table / store name
+      });
 
+      // Key under which history entries are stored
+      const HISTORY_KEY = 'historyEntries';
+
+      // Structure of a history entry:
+      // {
+      //   id: string or number,
+      //   title: string,
+      //   url: string,
+      //   favicon: string (URL),
+      //   timestamp: number (milliseconds since Unix epoch)
+      // }
+
+      // Fetch entries from storage
+      async function loadHistoryEntries() {
+        const entries = await localforage.getItem(HISTORY_KEY);
+        return entries || []; // return an array
+      }
+
+      // Save entries
+      async function saveHistoryEntries(entries) {
+        await localforage.setItem(HISTORY_KEY, entries);
+      }
+
+      // Delete a single entry
+      async function deleteEntry(entryId) {
+        const entries = await loadHistoryEntries();
+        const filtered = entries.filter(e => e.id !== entryId);
+        await saveHistoryEntries(filtered);
+        renderHistory(filtered);
+      }
+
+      // Clear all history
+      async function clearAllHistory() {
+        await saveHistoryEntries([]);
+        renderHistory([]);
+      }
+
+      // Search / filter entries
+      function filterEntries(entries, searchTerm) {
+        const term = searchTerm.toLowerCase();
+        return entries.filter(e => {
+          return e.title.toLowerCase().includes(term)
+                 || e.url.toLowerCase().includes(term);
+        });
+      }
+
+      // Format date
+      function formatDate(ts) {
+        const d = new Date(ts);
+        const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+        return d.toLocaleDateString(undefined, options);
+      }
+
+      // Render the history entries grouped by day
+      function renderHistory(entries) {
+        const container = document.getElementById('history-window');
+        container.innerHTML = ''; // clear
+
+        if (!entries || entries.length === 0) {
+          const p = document.createElement('p');
+          p.textContent = 'No history available.';
+          p.style.color = 'var(--text-color)';
+          container.appendChild(p);
+          return;
+        }
+
+        // Group by date
+        const byDate = {};
+        entries.forEach(e => {
+          const dateStr = new Date(e.timestamp).toDateString();
+          if (!byDate[dateStr]) byDate[dateStr] = [];
+          byDate[dateStr].push(e);
+        });
+
+        // Sort dates (most recent first)
+        const sortedDates = Object.keys(byDate)
+                                  .sort((a, b) => new Date(b) - new Date(a));
+
+        sortedDates.forEach(dateStr => {
+          const dayEntries = byDate[dateStr];
+          // Create section
+          const section = document.createElement('div');
+          section.className = 'history-category';
+
+          const h3 = document.createElement('h3');
+          h3.className = 'day_title';
+          h3.textContent = formatDate(dayEntries[0].timestamp);
+          section.appendChild(h3);
+
+          const hr = document.createElement('hr');
+          hr.className = 'separator';
+          section.appendChild(hr);
+
+          dayEntries.forEach(e => {
+            const div = document.createElement('div');
+            div.className = 'history-entry';
+            div.dataset.entryId = e.id;
+
+            const img = document.createElement('img');
+            img.src = e.favicon || ''; 
+            img.className = 'history_favicon';
+            div.appendChild(img);
+
+            const pTitle = document.createElement('p');
+            pTitle.textContent = e.title || e.url;
+            div.appendChild(pTitle);
+
+            const pUrl = document.createElement('p');
+            pUrl.className = 'history_hostname';
+            pUrl.textContent = new URL(e.url).hostname;
+            div.appendChild(pUrl);
+
+            const spanDel = document.createElement('span');
+            spanDel.className = 'material-symbols-outlined deleteHistory';
+            spanDel.textContent = 'close';
+            spanDel.title = 'Delete this entry';
+            spanDel.addEventListener('click', () => {
+              deleteEntry(e.id);
+            });
+            div.appendChild(spanDel);
+
+            section.appendChild(div);
+          });
+
+          container.appendChild(section);
+        });
+      }
+
+      // Initialize: load & render
+      async function initHistory() {
+        const entries = await loadHistoryEntries();
+        renderHistory(entries);
+
+        // set up search
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('input', (ev) => {
+          const val = ev.target.value;
+          loadHistoryEntries().then(allEntries => {
+            const filtered = filterEntries(allEntries, val);
+            renderHistory(filtered);
+          });
+        });
+      }
+
+      // Example: how to add new entry — for testing/demo
+      async function addHistoryEntry(entry) {
+        const entries = await loadHistoryEntries();
+        // generate id
+        const newId = entry.id || ('id-'+Date.now() + '-' + Math.random().toString(36).substr(2,5));
+        entry.id = newId;
+        entry.timestamp = entry.timestamp || Date.now();
+        entries.push(entry);
+        await saveHistoryEntries(entries);
+        renderHistory(entries);
+      }
+
+      // On document ready
+      document.addEventListener('DOMContentLoaded', () => {
+        initHistory();
+
+        // Optional: add demo entries if empty
+        loadHistoryEntries().then(entries => {
+          if (!entries || entries.length === 0) {
+            // demo
+            const demo = [
+              {
+                title: "Google | Search",
+                url: "https://www.google.com",
+                favicon: "https://www.google.com/favicon.ico"
+              },
+              {
+                title: "Mozilla Developer Network",
+                url: "https://developer.mozilla.org/",
+                favicon: "https://developer.mozilla.org/favicon.ico"
+              }
+            ];
+            demo.forEach(e => addHistoryEntry(e));
+          }
+        });
+      });
+
+    </script>
+</body>
 </html>
