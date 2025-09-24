@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -8,38 +7,157 @@
     <link rel="stylesheet" type="text/css" href="/assets/css/global.css" />
     <link rel="stylesheet" href="/assets/css/imports.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/vars.css" />
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="/assets/css/pages/internalBase.css"
-    />
+    <link rel="stylesheet" type="text/css" href="/assets/css/pages/internalBase.css" />
     <link rel="stylesheet" href="/assets/css/pages/extensions.css" />
-    <link rel="icon" type="icon/x-icon" href="/assets/imgs/logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/assets/imgs/logo.png" />
     <meta property="og:image" content="/assets/imgs/logo.png" />
+    <style>
+      /* Upgrade styles */
+      body {
+        font-family: system-ui, sans-serif;
+        display: flex;
+        background: var(--bg, #1b1b1b);
+        color: var(--text, #eee);
+      }
+      .sidenav {
+        width: 280px;
+        padding: 1rem;
+        background: var(--sidebar-bg, #222);
+        min-height: 100vh;
+      }
+      .sidenav h1 {
+        margin: 0 0 1rem 0;
+        font-size: 1.6rem;
+      }
+      .nav_searchbar {
+        display: flex;
+        align-items: center;
+        background: #333;
+        border-radius: 6px;
+        padding: 0.3rem 0.6rem;
+      }
+      .nav_searchbar .input {
+        background: transparent;
+        border: none;
+        outline: none;
+        flex: 1;
+        color: white;
+        padding: 0.4rem;
+      }
+      .main {
+        flex: 1;
+        padding: 2rem;
+      }
+      .extensions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.2rem;
+      }
+      .extension-card {
+        background: #2a2a2a;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s;
+      }
+      .extension-card:hover {
+        transform: translateY(-4px);
+      }
+      .extension-header {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .extension-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+      }
+      .extension-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+      .extension-desc {
+        font-size: 0.9rem;
+        margin: 0.6rem 0 1rem;
+        color: #bbb;
+      }
+      .extension-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .toggle-btn {
+        padding: 0.4rem 0.8rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #444;
+        color: white;
+        transition: background 0.2s;
+      }
+      .toggle-btn.active {
+        background: #4caf50;
+      }
+      .toggle-btn:hover {
+        background: #555;
+      }
+    </style>
   </head>
 
   <body>
     <ul class="sidenav">
       <h1>Extensions</h1>
       <div class="nav_searchbar">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="svg_icon bi-search"
-          viewBox="0 0 16 16"
-        >
-          <path
-            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"
-          ></path>
+        <svg xmlns="http://www.w3.org/2000/svg" class="svg_icon bi-search" viewBox="0 0 16 16" width="20" height="20" fill="white">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85c-.033-.037-.07-.07-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
         </svg>
-        <input
-          class="input"
-          type="text"
-          placeholder="Search Installed Extensions..."
-        />
+        <input class="input" type="text" id="searchInput" placeholder="Search Installed Extensions..." />
       </div>
       <hr />
     </ul>
+
+    <main class="main">
+      <div class="extensions-grid" id="extensionsGrid">
+        <!-- Example cards -->
+        <div class="extension-card" data-name="Ad Blocker">
+          <div class="extension-header">
+            <img src="/assets/imgs/ext/adblock.png" alt="Ad Blocker" />
+            <h3>Ad Blocker</h3>
+          </div>
+          <p class="extension-desc">Blocks unwanted ads and popups.</p>
+          <div class="extension-actions">
+            <button class="toggle-btn">Enable</button>
+          </div>
+        </div>
+
+        <div class="extension-card" data-name="Dark Mode">
+          <div class="extension-header">
+            <img src="/assets/imgs/ext/darkmode.png" alt="Dark Mode" />
+            <h3>Dark Mode</h3>
+          </div>
+          <p class="extension-desc">Forces dark theme on all websites.</p>
+          <div class="extension-actions">
+            <button class="toggle-btn">Enable</button>
+          </div>
+        </div>
+
+        <div class="extension-card" data-name="Password Manager">
+          <div class="extension-header">
+            <img src="/assets/imgs/ext/password.png" alt="Password Manager" />
+            <h3>Password Manager</h3>
+          </div>
+          <p class="extension-desc">Securely store and autofill passwords.</p>
+          <div class="extension-actions">
+            <button class="toggle-btn">Enable</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
     <!--Libs-->
     <script src="/assets/js/lib/localforage/localforage.min.js"></script>
     <script src="/assets/js/lib/wisp-client-js/wisp-client.js"></script>
@@ -48,7 +166,7 @@
     <script src="/assets/js/apis/events.js"></script>
     <script src="/assets/js/apis/logging.js"></script>
     <script src="/assets/js/apis/settings.js"></script>
-    <!--Pro*y files-->
+    <!--Proxy files-->
     <script src="/baremux/index.js"></script>
     <script src="/@/uv.bundle.js"></script>
     <script src="/@/uv.config.js"></script>
@@ -58,9 +176,30 @@
     <script src="/~/eclipse.config.js"></script>
     <script src="/&/sandstone.js"></script>
     <!--Main Scripts-->
-
     <script src="/assets/js/apis/proxy.js"></script>
     <script src="/assets/js/global/theming.js"></script>
     <script src="/assets/js/global/index.js"></script>
+
+    <script>
+      // Enable/Disable toggle logic
+      document.querySelectorAll(".toggle-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          btn.classList.toggle("active");
+          btn.textContent = btn.classList.contains("active") ? "Enabled" : "Enable";
+        });
+      });
+
+      // Search filter
+      const searchInput = document.getElementById("searchInput");
+      const cards = document.querySelectorAll(".extension-card");
+
+      searchInput.addEventListener("input", () => {
+        const query = searchInput.value.toLowerCase();
+        cards.forEach(card => {
+          const name = card.dataset.name.toLowerCase();
+          card.style.display = name.includes(query) ? "flex" : "none";
+        });
+      });
+    </script>
   </body>
 </html>
