@@ -1,131 +1,187 @@
-.separator{
-    border-radius: 999px !important;
-    background: var(--border-color) !important;
-    height: 3px !important;
-    margin-left: 30px !important;
-    width: 100% !important;
+/* 🌟 Separator Line */
+.separator {
+  border-radius: 999px !important;
+  background: var(--border-color) !important;
+  height: 3px !important;
+  margin: 20px auto !important;
+  width: 90% !important;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
 }
+.separator:hover {
+  opacity: 1;
+}
+
+/* 📂 History Container */
 .historyContainer {
-    margin-left: 150px;
-    height: 100vh;
-    width: 100vw;
+  margin-left: 150px;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden;
 }
 
+/* 🌌 Background Overlay */
 .background {
-    height: 100vh;
-    width: 100vw;
-    z-index: -1;
-    background-color: rgba(58, 58, 58, 0.45);
-    margin-top: -22px;
-    position: fixed;
-    transform: translate(-50%, -50%);
-    top: 50%;
-    left: 50%;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 100vh;
+  width: 100vw;
+  background-color: rgba(58, 58, 58, 0.45);
+  backdrop-filter: blur(20px);
+  z-index: -1;
 }
 
-.history_submit {
-    background: transparent;
-
-}
-
+/* 🔍 Search Bar */
 .search {
-    font-size: 14px;
-    padding: 5px 10px;
-    outline: none;
-    border: none;
-    background: transparent;
-    color: var(--text-color);
-    transition: 0.2s ease;
-    border: var(--border-color) 1px solid;
-    border-radius: 9999px;
-    font-family: "Plus Jakarta Sans";
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border-radius: 999px;
-    border: var(--border-color) 1px solid;
-    padding: 5px;
-    width: fit-content;
+  font-size: 14px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-color);
+  font-family: "Plus Jakarta Sans", sans-serif;
+  transition: all 0.3s ease;
+  width: fit-content;
+  min-width: 220px;
 }
 
 .search:hover {
-    background: var(--input-hover-background-color) !important;
-    color: var(--hover-text-color) !important;
+  background: var(--input-hover-background-color) !important;
+  color: var(--hover-text-color) !important;
 }
 
 .search:focus-within {
-    background: var(--input-background-color) !important;
-    color: var(--active-text-color) !important;
-    border-color: var(--active-border-color) !important;
+  background: var(--input-background-color) !important;
+  color: var(--active-text-color) !important;
+  border-color: var(--active-border-color) !important;
 }
 
-/* Styling for input inside .search */
 .search input {
-    font-size: 14px;
-    padding: 5px;
-    outline: none;
-    border: none;
-    background: transparent;
-    color: inherit;
-    flex: 1;
+  font-size: 14px;
+  padding: 5px;
+  outline: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  flex: 1;
 }
-.history-window{
-    height: 100vh;
-    background-color: var(--dark-translucent-bg);
-    margin-top: 20px;
-    border: var(--border-color) 1px solid;
-    border-radius: 10px;
-    text-overflow: ellipsis;
-    overflow-x: hidden;
-    overflow-y: scroll;
-}
-.day_title{
-    font-weight: 100;
-    margin-left: 30px;
-    margin-top: 30px;
-    font-size: 16px;
-}
-.history-entry{
-    
-    margin-left: 30px;
-    margin-top: 30px;
-    display: flex;
-    flex-direction: row;
-    gap: 15px;
-    align-items: center;
-    font-weight: 600;
-    font-weight: 400;
-    letter-spacing: 0.3px;
-    transition: all 0.2s ease;
 
+/* 🪟 History Window */
+.history-window {
+  flex: 1;
+  height: calc(100vh - 120px);
+  background: var(--dark-translucent-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  margin: 10px 30px 30px 30px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  transition: border-color 0.3s ease;
 }
-.history_favicon{
-    width: 32px;
-    height: 32px;
-    transition: all 0.2s ease;
+.history-window:hover {
+  border-color: var(--active-border-color);
 }
-.history-entry:hover{
-    font-weight: 600;
-    letter-spacing: 0.8px;
-    transition: all 0.2s ease;
-}
-.history_hostname{
-    color: var(--muted);
-    font-weight: 200;
-    transition: all 0.2s ease;
 
+/* 📅 Day Title */
+.day_title {
+  font-weight: 500;
+  margin: 25px 0 10px 30px;
+  font-size: 15px;
+  color: var(--muted);
+  letter-spacing: 0.3px;
+}
+
+/* 📜 History Entry */
+.history-entry {
+  margin: 12px 30px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  align-items: center;
+  font-weight: 400;
+  border-radius: 10px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+.history-entry:hover {
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  transform: translateX(5px);
+}
+
+/* 🖼 History Favicon */
+.history_favicon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  transition: transform 0.25s ease;
 }
 .history-entry:hover .history_favicon {
-    transform: scale(1.1);
+  transform: scale(1.15) rotate(3deg);
 }
 
+/* 🌐 Hostname */
+.history_hostname {
+  color: var(--muted);
+  font-weight: 300;
+  transition: color 0.25s ease;
+}
 .history-entry:hover .history_hostname {
-    color: var(--active-text-color);
-    transition: color 0.2s ease;
+  color: var(--active-text-color);
 }
-.deleteHistory{
-    justify-self: right;
 
-    transition: all 0.2s ease;
-   
+/* ❌ Delete Button */
+.deleteHistory {
+  margin-left: auto;
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.deleteHistory:hover {
+  color: #ff5c5c;
+  border-color: #ff5c5c;
+  background: rgba(255, 92, 92, 0.1);
+  transform: scale(1.05);
+}
+
+/* 📱 Responsive Fixes */
+@media (max-width: 1024px) {
+  .historyContainer {
+    margin-left: 0;
+  }
+  .history-window {
+    margin: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .search {
+    min-width: 180px;
+    font-size: 13px;
+  }
+  .history-entry {
+    gap: 10px;
+    padding: 8px;
+  }
+  .history_favicon {
+    width: 28px;
+    height: 28px;
+  }
 }
