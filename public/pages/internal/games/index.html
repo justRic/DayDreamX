@@ -1,48 +1,80 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Diddy bluds</title>
-    <link rel="stylesheet" type="text/css" href="/assets/css/global.css" />
-    <link rel="stylesheet" href="/assets/css/imports.css" />
-    <link rel="stylesheet" type="text/css" href="/assets/css/vars.css" />
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="/assets/css/pages/internalBase.css"
-    />
-    <link rel="stylesheet" href="/assets/css/pages/games.css" />
-    <link rel="icon" type="icon/x-icon" href="/assets/imgs/logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta property="og:image" content="/assets/imgs/logo.png" />
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Ye-Games Hub</title>
+  
+  <!-- Favicon & Open Graph -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/imgs/logo.png" />
+  <meta property="og:image" content="/assets/imgs/logo.png" />
+  <meta property="og:title" content="Ye-Games Hub" />
+  <meta property="og:description" content="Play games seamlessly in Ye-Games Hub" />
 
-  <body>
-    <div id="gamesGrid"></div>
-    <!--Libs-->
-    <script src="/assets/js/lib/localforage/localforage.min.js"></script>
-    <script src="/assets/js/lib/wisp-client-js/wisp-client.js"></script>
-    <script src="/assets/js/lib/Nightmare/nightmare.js"></script>
-    <!--APIs-->
-    <script src="/assets/js/apis/events.js"></script>
-    <script src="/assets/js/apis/logging.js"></script>
-    <script src="/assets/js/apis/settings.js"></script>
-    <!--Pro*y files-->
-    <script src="/baremux/index.js"></script>
-    <script src="/@/uv.bundle.js"></script>
-    <script src="/@/uv.config.js"></script>
-    <script src="/$/scramjet.config.js"></script>
-    <script src="/$/scramjet.controller.js"></script>
-    <script src="/~/eclipse.codecs.js"></script>
-    <script src="/~/eclipse.config.js"></script>
-    <script src="/&/sandstone.js"></script>
-    <!--Main Scripts-->
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/assets/css/vars.css" />
+  <link rel="stylesheet" href="/assets/css/global.css" />
+  <link rel="stylesheet" href="/assets/css/imports.css" />
+  <link rel="stylesheet" href="/assets/css/pages/internalBase.css" />
+  <link rel="stylesheet" href="/assets/css/pages/games.css" />
 
-    <script src="/assets/js/apis/proxy.js"></script>
-    <script src="/assets/js/global/theming.js"></script>
-    <script src="/assets/js/global/index.js"></script>
-    <script src="/assets/js/internal/games.js"></script>
-  </body>
+  <!-- Content Security Policy (CSP) -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; frame-src https://ye-games.web.app; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+
+  <style>
+    /* Ensure full viewport use, no scrollbars, clean layout */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    #game-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fallback message for browsers that do not support iframe -->
+  <iframe
+    id="game-container"
+    src="https://ye-games.web.app/"
+    title="Ye Games Hub"
+    allow="fullscreen"
+    loading="eager"
+    referrerpolicy="strict-origin-when-cross-origin"
+    sandbox="allow-scripts allow-same-origin"
+  >
+    <p>Your browser does not support inline frames. Please visit <a href="https://ye-games.web.app/">Ye-Games</a> directly.</p>
+  </iframe>
+
+  <script>
+    // Optional: ensure focus is inside the iframe to capture keyboard/game input
+    const iframe = document.getElementById('game-container');
+    iframe.addEventListener('load', () => {
+      try {
+        iframe.contentWindow.focus();
+      } catch (e) {
+        console.warn('Unable to focus iframe (cross-origin restrictions).');
+      }
+    });
+
+    // Optional: message passing if you need communications between host and game
+    window.addEventListener('message', (event) => {
+      if (event.origin !== 'https://ye-games.web.app') {
+        // ignore messages from unexpected origins
+        return;
+      }
+      // handle messages
+      console.log('Received message from game iframe:', event.data);
+    });
+  </script>
+</body>
 </html>
