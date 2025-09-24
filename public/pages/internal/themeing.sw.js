@@ -2,80 +2,76 @@ importScripts("/assets/js/lib/filerJS/filer.min.js");
 
 const fs = new Filer.FileSystem({ name: "theme-files" });
 
+const DIRECTORIES = {
+  backgrounds: "/backgrounds",
+  logos: "/logos",
+  icons: "/icons",
+};
+
+// ---- Install / Activate ----
 self.addEventListener("install", (event) => {
-  console.log("Theming Service Worker installed");
+  console.log("[Theme SW] Installing…");
   event.waitUntil(
-    Promise.all([createDirectory("/backgrounds"), createDirectory("/logos")])
+    Promise.all(
+      Object.values(DIRECTORIES).map((dir) => createDirectory(dir))
+    )
   );
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-  console.log("Service Worker activated");
+  console.log("[Theme SW] Activated");
   event.waitUntil(clients.claim());
 });
 
-// Messaging API
+// ---- Messaging API ----
 self.addEventListener("message", async (event) => {
-  const { type, file } = event.data;
+  const { type, category, file, filename } = event.data;
+  const dir = DIRECTORIES[category];
+
+  if (!dir) {
+    console.warn(`[Theme SW] Unknown category: ${category}`);
+    return;
+  }
 
   switch (type) {
-    case "uploadBG":
+    case "upload":
       event.source.postMessage({
         type,
-        success: await uploadFile("/backgrounds", file),
+        category,
+        success: await uploadFile(dir, file),
       });
       break;
 
-    case "removeBG":
+    case "remove":
       event.source.postMessage({
         type,
-        success: await removeFile("/backgrounds", file),
+        category,
+        success: await removeFile(dir, filename),
       });
       break;
 
-    case "listBG":
+    case "list":
       event.source.postMessage({
         type,
-        files: await listFiles("/backgrounds"),
-      });
-      break;
-
-    case "uploadLogo":
-      event.source.postMessage({
-        type,
-        success: await uploadFile("/logos", file),
-      });
-      break;
-
-    case "removeLogo":
-      event.source.postMessage({
-        type,
-        success: await removeFile("/logos", file),
-      });
-      break;
-
-    case "listLogos":
-      event.source.postMessage({
-        type,
-        files: await listFiles("/logos"),
+        category,
+        files: await listFiles(dir),
       });
       break;
 
     default:
-      console.warn(`Unknown message type: ${type}`);
+      console.warn(`[Theme SW] Unknown message type: ${type}`);
   }
 });
 
-// ---- File helpers ----
+// ---- File Helpers ----
 async function createDirectory(path) {
   return new Promise((resolve) => {
     fs.mkdir(path, { recursive: true }, (err) => {
       if (err && err.code !== "EEXIST") {
-        console.error(`Error creating directory ${path}:`, err);
+        console.error(`[Theme SW] Error creating ${path}:`, err);
         resolve(false);
-      } else {
-        resolve(true);
-      }
+      } else resolve(true);
     });
   });
 }
@@ -91,16 +87,16 @@ async function uploadFile(dir, file) {
     return new Promise((resolve) => {
       fs.writeFile(filePath, buffer, (err) => {
         if (err) {
-          console.error(`Error writing file ${filePath}:`, err);
+          console.error(`[Theme SW] Error writing ${filePath}:`, err);
           resolve(false);
         } else {
-          console.log(`File "${filePath}" uploaded successfully.`);
+          console.log(`[Theme SW] Uploaded: ${filePath}`);
           resolve(true);
         }
       });
     });
   } catch (err) {
-    console.error("Upload error:", err);
+    console.error("[Theme SW] Upload error:", err);
     return false;
   }
 }
@@ -111,10 +107,10 @@ async function removeFile(dir, filename) {
   return new Promise((resolve) => {
     fs.unlink(filePath, (err) => {
       if (err) {
-        console.error(`Error deleting file ${filePath}:`, err);
+        console.error(`[Theme SW] Error deleting ${filePath}:`, err);
         resolve(false);
       } else {
-        console.log(`File "${filePath}" removed successfully.`);
+        console.log(`[Theme SW] Removed: ${filePath}`);
         resolve(true);
       }
     });
@@ -125,7 +121,7 @@ async function listFiles(dir) {
   return new Promise((resolve) => {
     fs.readdir(dir, (err, entries) => {
       if (err) {
-        console.error(`Error listing files in ${dir}:`, err);
+        console.error(`[Theme SW] Error listing ${dir}:`, err);
         resolve([]);
       } else {
         resolve(entries);
@@ -138,12 +134,12 @@ async function listFiles(dir) {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  if (url.pathname.startsWith("/internal/themes/backgrounds/")) {
-    const filename = url.pathname.replace("/internal/themes/backgrounds/", "");
-    event.respondWith(serveFile(`/backgrounds/${filename}`));
-  } else if (url.pathname.startsWith("/internal/themes/logos/")) {
-    const filename = url.pathname.replace("/internal/themes/logos/", "");
-    event.respondWith(serveFile(`/logos/${filename}`));
+  for (const [category, dir] of Object.entries(DIRECTORIES)) {
+    if (url.pathname.startsWith(`/internal/themes/${category}/`)) {
+      const filename = url.pathname.replace(`/internal/themes/${category}/`, "");
+      event.respondWith(serveFile(`${dir}/${filename}`));
+      return;
+    }
   }
 });
 
@@ -151,7 +147,7 @@ function serveFile(path) {
   return new Promise((resolve) => {
     fs.readFile(path, (err, data) => {
       if (err) {
-        console.error(`File not found: ${path}`, err);
+        console.warn(`[Theme SW] File not found: ${path}`);
         resolve(new Response("File not found", { status: 404 }));
       } else {
         resolve(
@@ -171,19 +167,14 @@ function serveFile(path) {
 // ---- MIME helper ----
 function getMimeType(filename) {
   const ext = filename.split(".").pop().toLowerCase();
-  switch (ext) {
-    case "png":
-      return "image/png";
-    case "jpg":
-    case "jpeg":
-      return "image/jpeg";
-    case "gif":
-      return "image/gif";
-    case "webp":
-      return "image/webp";
-    case "svg":
-      return "image/svg+xml";
-    default:
-      return "application/octet-stream";
-  }
+  const types = {
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    gif: "image/gif",
+    webp: "image/webp",
+    svg: "image/svg+xml",
+    ico: "image/x-icon",
+  };
+  return types[ext] || "application/octet-stream";
 }
